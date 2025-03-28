@@ -7,44 +7,14 @@ import { take } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TaskWithMessage } from './task.model';
+import { TaskformComponent } from '../taskform/taskform.component';
 
 @Component({
   selector: 'app-tasks',
-  imports: [TaskComponent, RouterLink, FormsModule],
+  imports: [TaskComponent, RouterLink, FormsModule, TaskformComponent],
   template: `
     <h1>Mano šiandienos užduotys:</h1>
-    <form #taskForm="ngForm" (ngSubmit)="pridek()">
-      <fieldset>
-        <ul>
-          <li>
-            <label for="text">Tekstas</label>
-            <input
-              type="text"
-              name="text"
-              id="text"
-              [(ngModel)]="model.text"
-              required
-              #taskText="ngModel"
-            />
-          </li>
-          @if (taskText.errors?.['required']) {
-          <span>Laukas privalomas</span>
-          }
-          <li>
-            <label for="date">Data</label>
-            <input
-              type="date"
-              name="date"
-              id="date"
-              [(ngModel)]="model.stringDate"
-              required
-              min="2025-03-28"
-            />
-          </li>
-        </ul>
-      </fieldset>
-      <button [disabled]="!taskForm.valid">Pridek naują task</button>
-    </form>
+    <app-taskform></app-taskform>
     <ul>
       @for (taskas of taskai(); track $index) {
       <li>
@@ -60,22 +30,11 @@ export class TasksComponent implements OnInit {
   private tasksService = inject(TasksService);
   private destroyRef = inject(DestroyRef);
   taskai: Signal<Task[]> = this.tasksService.tasksSignal;
-  model = new TaskWithMessage('', '');
 
   ngOnInit(): void {
     this.tasksService
       .getTasks()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe();
-  }
-
-  pridek() {
-    this.tasksService
-      .addTask({
-        text: this.model.text,
-        date: new Date(this.model.stringDate),
-      })
-      .pipe(take(1))
       .subscribe();
   }
 }
